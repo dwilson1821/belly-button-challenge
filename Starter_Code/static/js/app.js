@@ -4,7 +4,6 @@ function buildMetadata(sample) {
 
     // get the metadata field
     const metadata = data.metadata
-    console.log(metadata);
 
     // Filter the metadata for the object with the desired sample number
     const desired = metadata.filter(item => item.id === sample)[0];
