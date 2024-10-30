@@ -4,9 +4,10 @@ function buildMetadata(sample) {
 
     // get the metadata field
     const metadata = data.metadata
+    console.log(metadata);
 
     // Filter the metadata for the object with the desired sample number
-    const desired = metadata.filter(item => item.id === sample);
+    const desired = metadata.filter(item => item.id === sample)[0];
 
     // Use d3 to select the panel with id of `#sample-metadata`
     const panel = d3.select("#sample-metadata");
@@ -21,9 +22,7 @@ function buildMetadata(sample) {
       panel.append("h6").text(`${key}: ${value}`);
 
     });
-    console.log(metadata);
-    console.log(desired);
-    console.log(panel);
+    
   });
 }
 
@@ -33,48 +32,49 @@ function buildCharts(sample) {
 
     // Get the samples field
     const samples = data.samples;
-
+    console.log(samples);
 
     // Filter the samples for the object with the desired sample number
-    const filteredsample = samples.filter(stuff => stuff.id === sample);
+    const filteredsample = samples.filter(stuff => stuff.id === sample)[0];
 
 
     // Get the otu_ids, otu_labels, and sample_values
-    const otu_ids = filteredsample.otu_ids.slice(0,10).reverse();
-    const otu_labels = filteredsample.otu_labels.slice(0, 10).reverse();
-    const sample_values = filteredsample.sample_values.slice(0, 10).reverse();
+    const otu_ids = filteredsample.otu_ids;
+    const otu_labels = filteredsample.otu_labels;
+    const sample_values = filteredsample.sample_values;
 
 
     // Build a Bubble Chart
     const bubbledata = [{
-      x: filteredsample.otu_ids,
-      y: filteredsample.sample_values,
-      text: filteredsample.otu_labels,
+      x: otu_ids,
+      y: sample_values,
+      text: otu_labels,
       mode: "markers",
       marker: {
-        size: filteredsample.sample_values,
-        color: filteredsample.otu_ids,
+        size: sample_values,
+        color: otu_ids,
         colorscale: "Earth"
       }
     }];
 
     const bubblelayout = {
-      title: "Bubble Chart",
+      title: "Bacteria Cultures Per Sample",
       xaxis: { title: "OTU ID" },
-      yaxis: { title: "Sample Values" }
+      yaxis: { title: "Number of Bacteria" }
     };
 
 
     // Render the Bubble Chart
-    Plotly.newPlot('bubble', bubbledata, bubblelayout);
+    Plotly.newPlot('bubble', [bubbledata], bubblelayout);
 
 
     // For the Bar Chart, map the otu_ids to a list of strings for your yticks
     const bardata = [{
       type: 'bar',
-      x: sample_values,
-      y: otu_ids.map(id => `OTU ${id}`), // Format OTU IDs for display
+      x: sample_values.slice(0,10),
+      y: otu_ids.slice(0,10).map(id => `OTU ${id}`), // Format OTU IDs for display
       text: otu_labels,
+      type: 'bar',
       orientation: 'h'
     }];
 
@@ -84,12 +84,11 @@ function buildCharts(sample) {
     const barlayout = {
       title: 'Top 10 Bacteria Cultures Found',
       xaxis: { title: 'Number of Bacteria' },
-      yaxis: { title: 'OTU IDs' }
     };
 
 
     // Render the Bar Chart
-    Plotly.newPlot('bar', bardata, barlayout);
+    Plotly.newPlot('bar', [bardata], barlayout);
   
 
   });
@@ -100,7 +99,8 @@ function init() {
   d3.json("https://static.bc-edx.com/data/dl-1-2/m14/lms/starter/samples.json").then((data) => {
 
     // Get the names field
-    const fieldNames = data.names;
+    const names = data.names;
+    console.log(names);
 
     // Use d3 to select the dropdown with id of `#selDataset`
     const dropdown = d3.select("#selDataset");
@@ -108,12 +108,13 @@ function init() {
     // Use the list of sample names to populate the select options
     // Hint: Inside a loop, you will need to use d3 to append a new
     // option for each sample name.
-    fieldNames.forEach((sample) => {
-      dropdown.append("option").text(sample).property("value", sample);
-    });
+    for (let i = 0; i < names.length; i++) {
+      dropdown.append("option").attr("value", names[i]).text(names[i])
+    };
 
     // Get the first sample from the list
-    const firstSample = fieldNames[0];
+    const firstSample = names[0];
+    console.log(firstSample);
 
     // Build charts and metadata panel with the first sample
     buildCharts(firstSample);
